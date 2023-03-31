@@ -134,20 +134,20 @@ def parse_course_requirements(requirements: str) -> _Node:
 
         # Group courses by brackets with separators between brackets included in list
         # If a bracket/separator is encountered, reset curr_item?? If in brackets, ignore separators
-        in_brackets = False
+        bracket_level = 0
         curr_group = ''
         course_groups = []
         for i in requirements:
             if i == '(':
-                in_brackets = True
+                bracket_level += 1
             elif i == ')':
-                in_brackets = False
+                bracket_level -= 1
 
-            if not in_brackets and i in ('|', '^'):
+            if bracket_level == 0 and i in ('|', '^'):
                 course_groups.append(curr_group)
                 curr_group = ''
                 course_groups.append(i)
-            elif in_brackets and i in ('|', '^'):
+            elif bracket_level > 0 and i in ('|', '^'):
                 curr_group += i
             elif i not in ('|', '^'):
                 curr_group += i
