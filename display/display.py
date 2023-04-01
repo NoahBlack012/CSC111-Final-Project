@@ -10,11 +10,11 @@ from tkinter import ttk
 root = Tk()
 # root.attributes('-fullscreen', True)
 root.title("Simplifying the Course Selection Process")
-root.resizable(False, False)
 
 """ Introduction """
 Label(root, text="\
-w                 ")
+Welcome to ...").grid(row=0, column=0)
+
 """ Frame 1: For completed courses. """
 frame1 = LabelFrame(root, text="What courses have you completed?", padx=15, pady=15)
 frame1.grid(row=1, column=0)
