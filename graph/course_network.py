@@ -38,9 +38,11 @@ class DatabaseCourseNetwork:
     """
 
     courses: list[DatabaseCourse]
+    courses_taken: set[str]
 
-    def __init__(self):
+    def __init__(self, courses_taken: set[str]):
         self.courses = []
+        self.courses_taken = courses_taken
 
     def add_course(self, code: str) -> DatabaseCourse:
         """
@@ -79,9 +81,15 @@ class DatabaseCourseNetwork:
 
         possible_prereqs = start.prerequisites
 
+        for req in possible_prereqs:
+            if req.issubset(self.courses_taken):
+                return PlannerCourseNetwork(start)
+
         # first one to get maximum
         prereq_networks_to_merge = []
         for req in possible_prereqs[0]:
+            if req in self.courses_taken:
+                continue
             course = self.get_course(req)
             if course is not None:
                 prereq_networks_to_merge.append(self.recur(course))
@@ -95,6 +103,8 @@ class DatabaseCourseNetwork:
             prereq_networks_to_merge = []
             invalid_course = False
             for req in reqs:
+                if req in self.courses_taken:
+                    continue
                 course = self.get_course(req)
                 if course is not None:
                     prereq_networks_to_merge.append(self.recur(course))
