@@ -31,11 +31,12 @@ def run(c: str, taken: set[str]) -> PlannerCourseNetwork:
             course.add_prereqs(reqs)
 
         course = course_network.get_course(c)
+
         planner = course_network.recur(course)
 
         return planner
 
 
 if __name__ == '__main__':
-    planner = run('CSC443H1', {'CSC110Y1'})
+    planner = run('CSC384H1', set())
     print(str(planner))
