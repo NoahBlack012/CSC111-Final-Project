@@ -14,7 +14,7 @@ def run(c: str) -> PlannerCourseNetwork:
     """
     TODO
     """
-    json_file = "../data-procesing/courses_clean.json"
+    json_file = "../data-processing/courses_clean.json"
 
     with open(json_file) as f:
 
