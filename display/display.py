@@ -2,9 +2,17 @@
 Creates a tkinter window which allows the user to input the course codes of the courses they have already
 completed, as well as the course they want to complete (desired course).
 """
-
 from tkinter import *
 from tkinter import ttk
+import json
+
+# create a list of all possible courses
+all_courses = []
+with open('../data-processing/courses_clean.json') as file:
+    file_contents = json.load(file)
+
+for course_dict in file_contents:
+    all_courses.append(course_dict["course code"])
 
 # create the tkinter window
 root = Tk()
@@ -13,7 +21,8 @@ root.title("Simplifying the Course Selection Process")
 
 """ Introduction """
 Label(root, text="\
-Welcome to ...").grid(row=0, column=0)
+Welcome to ...\
+Please refer to the project report for more details.").grid(row=0, column=0)
 
 """ Frame 1: For completed courses. """
 frame1 = LabelFrame(root, text="What courses have you completed?", padx=15, pady=15)
@@ -76,24 +85,6 @@ desired_course_box = Entry(frame2)
 desired_course_box.grid(row=0, column=1)
 
 
-def is_course_format(s: str) -> bool:
-    """
-    Helper function - Return whether a string is in the format of a course
-
-    >>> is_course_format("CSC111H1")
-    True
-    >>> is_course_format("CSCAA1")
-    False
-    >>> is_course_format("")
-    False
-    """
-    if len(s) == 8 and s[0:3].isalpha() and (s[3:6].isnumeric() or (s[4:6].isnumeric())) and s[6].isalpha() and \
-            s[7].isnumeric():
-        return True
-    else:
-        return False
-
-
 # create a button to submit courses
 def submit():
     """ If all the users entries are valid, submit them and display the results. """
@@ -102,23 +93,23 @@ def submit():
     for key in entries:
         course = entries[key].get()
         if course != '':  # Ignore empty course boxes
-            if is_course_format(course):
+            if course in all_courses:
                 completed_courses.append(course)
             else:  # If the course is not a valid course, exit and let the user know
                 course_error.config(text="'" + course + "' is not a valid course.")
-                course_error.grid(row=1, column=0, sticky='W')
+                course_error.grid(row=2, column=0, sticky='W')
                 return
 
     # get desired course
     desired_course = desired_course_box.get()
     if desired_course == '':
         course_error.config(text="You must input a desired course.")
-        course_error.grid(row=1, column=0, sticky='W')
-    elif not is_course_format(desired_course):
+        course_error.grid(row=2, column=0, sticky='W')
+    elif desired_course not in all_courses:
         course_error.config(text="'" + desired_course + "' is not a valid course.")
-        course_error.grid(row=1, column=0, sticky='W')
+        course_error.grid(row=2, column=0, sticky='W')
 
-    # If all courses are valid,... TODO
+    # If all courses are valid, display the results
     else:
         display_results(completed_courses, desired_course)
 
@@ -141,15 +132,19 @@ def display_results(completed: list[str], desired: str):
     """ TODO """
     starting_label.destroy()
     recommended_path.grid_remove()
+    tree_drawing.grid_remove()
     description.grid_remove()
     recommended_path.config(text="We recommend taking the following courses:" + get_path(completed, desired))
     recommended_path.grid(row=0, column=0)
-    description.config(text=get_description(desired))
-    description.grid(row=1, column=0)
+    tree_drawing.config(text=draw_tree())
+    tree_drawing.grid(row=1, column=0)
+    description.config(text="Course description:" + get_description(desired))
+    description.grid(row=2, column=0)
 
 
 recommended_path = Label(frame3)
 description = Label(frame3)
+tree_drawing = Label(frame3)
 
 # run the tkinter window
 root.mainloop()
