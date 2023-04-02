@@ -10,17 +10,17 @@ from helper import *
 from course_network import DatabaseCourseNetwork, PlannerCourseNetwork
 
 
-def run(c: str) -> PlannerCourseNetwork:
+def run(c: str, taken: set[str]) -> PlannerCourseNetwork:
     """
     TODO
     """
-    json_file = "../data-procesing/courses_clean.json"
+    json_file = "../data-processing/courses_clean.json"
 
     with open(json_file) as f:
 
         data = json.load(f)
 
-        course_network = DatabaseCourseNetwork()
+        course_network = DatabaseCourseNetwork(taken)
         for i in data:
             code = i['course code']
             course_network.add_course(code)
@@ -31,11 +31,12 @@ def run(c: str) -> PlannerCourseNetwork:
             course.add_prereqs(reqs)
 
         course = course_network.get_course(c)
+
         planner = course_network.recur(course)
 
         return planner
 
 
 if __name__ == '__main__':
-    planner = run('CSC443H1')
+    planner = run('CSC384H1', set())
     print(str(planner))

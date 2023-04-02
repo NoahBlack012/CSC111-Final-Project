@@ -37,10 +37,12 @@ class DatabaseCourseNetwork:
 
     """
 
-    courses: list[DatabaseCourse]
+    courses: dict[str, DatabaseCourse]
+    courses_taken: set[str]
 
-    def __init__(self):
-        self.courses = []
+    def __init__(self, courses_taken: set[str]):
+        self.courses = dict()
+        self.courses_taken = courses_taken
 
     def add_course(self, code: str) -> DatabaseCourse:
         """
@@ -57,16 +59,19 @@ class DatabaseCourseNetwork:
 
         new_course = DatabaseCourse(code, credit, duration)
 
-        self.courses.append(new_course)
+        self.courses[code] = new_course
+        # self.courses.append(new_course)
 
         return new_course
 
     def get_course(self, code: str) -> DatabaseCourse | None:
         """TODO"""
-        for course in self.courses:
-            if course.code == code:
-                return course
+        # for course in self.courses:
+        #     if course.code == code:
+        #         return course
 
+        if code in self.courses:
+            return self.courses[code]
         return None
 
     def recur(self, start: DatabaseCourse) -> PlannerCourseNetwork:
@@ -79,9 +84,15 @@ class DatabaseCourseNetwork:
 
         possible_prereqs = start.prerequisites
 
+        for req in possible_prereqs:
+            if req.issubset(self.courses_taken):
+                return PlannerCourseNetwork(start)
+
         # first one to get maximum
         prereq_networks_to_merge = []
         for req in possible_prereqs[0]:
+            if req in self.courses_taken:
+                continue
             course = self.get_course(req)
             if course is not None:
                 prereq_networks_to_merge.append(self.recur(course))
@@ -95,6 +106,8 @@ class DatabaseCourseNetwork:
             prereq_networks_to_merge = []
             invalid_course = False
             for req in reqs:
+                if req in self.courses_taken:
+                    continue
                 course = self.get_course(req)
                 if course is not None:
                     prereq_networks_to_merge.append(self.recur(course))
@@ -104,7 +117,7 @@ class DatabaseCourseNetwork:
                     invalid_course = True
 
             if invalid_course:
-                break
+                continue
 
             merged_network = PlannerCourseNetwork()
             merged_network.merge_networks(prereq_networks_to_merge, start)
