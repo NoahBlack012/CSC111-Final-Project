@@ -12,101 +12,137 @@ class CoursesSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
-        curr_course = None
         for n, row in enumerate(response.css("div.views-row")):
             if n % 2 == 0:
-                curr_course = row.css("h3.js-views-accordion-group-header::text").extract()[0].strip()
-            else:
-                # Corequisites and prerequisites are strings to represent possible combinations or corequisites or
-                # prerequisites. ^ represents and (A^B means that the prerequisites of a course are both A and B)
-                #. | represents or (A|B means that the prerequisites of a course are either A or B)
-                course_info = {
-                    "hours": None,
-                    "description": '',
-                    "prerequisites": "",
-                    "corequisites": "",
-                    "distribution": '',
-                    "breadth": '',
-                    "method of delivery": None,
-                    "exclusions": []
-                }
-                text = row.css("::text").getall()
-                current_item = None
-                for line_num, line in enumerate(text):
-                    line_s = line.strip()
-                    if line_s == "":
-                        continue
-                    elif line_s == "Hours:":
-                        current_item = "hours"
-                    elif line_num == 1 and text[1].strip() != "Hours:":
-                        current_item = "description"
-                    elif line_s == "Prerequisite:":
-                        current_item = "prerequisites"
-                    elif line_s == "Corequisite:":
-                        current_item = "corequisites"
-                    elif line_s == "Exclusion:":
-                        current_item = "exclusions"
-                    elif line_s == "Distribution Requirements:":
-                        current_item = "distribution"
-                    elif line_s == "Breadth Requirements:":
-                        current_item = "breadth"
-                    elif line_s == "Mode of Delivery:":
-                        current_item = "mode of delivery"
-                    else:
-                        # If the current row represents a piece of information
-                        if current_item == "hours":
-                            course_info["hours"] = line_s
-                            # Description always follows course hours
-                            current_item = "description"
-                        elif current_item == "description":
-                            course_info["description"] += line_s
-                            current_item = None
-                        elif current_item == "prerequisites":
-                            if len(line_s) == 8:
-                                # A line may consist of just a comma, course codes have 8 characters
-                                course_info["prerequisites"] += line_s
-                            else:
-                                # Look for separators in line - , / ( ) ;
-                                for i in line_s:
-                                    if i == "(" or i == ")":
-                                        course_info["prerequisites"] += i
-                                    if i == "," or i == ";":
-                                        course_info["prerequisites"] += "^"
-                                    if i == "/":
-                                        course_info["prerequisites"] += "|"
-                        elif current_item == "corequisites":
-                            if len(line_s) == 8:
-                                # A line may consist of jsut a comma, course codes have 8 characters
-                                course_info["corequisites"] += line_s
-                            else:
-                                # Look for separators in line - , / ( ) ;
-                                for i in line_s:
-                                    if i == "(" or i == ")":
-                                        course_info["corequisites"] += i
-                                    if i == "," or i == ";":
-                                        course_info["corequisites"] += "^"
-                                    if i == "/":
-                                        course_info["corequisites"] += "|"
-                        elif current_item == "exclusions":
-                            course_info["exclusions"].append(line_s)
-                            current_item = None
-                        elif current_item == "distribution":
-                            course_info["distribution"] = line_s
-                            current_item = None
-                        elif current_item == "breadth":
-                            course_info["breadth"] = line_s
-                            current_item = None
-                        elif current_item == "mode of delivery":
-                            course_info["mode of delivery"] = line_s
-                            current_item = None
+                course_name = row.css("h3.js-views-accordion-group-header::text").extract()[0].strip()
+                course_code = course_name[0:8]
+
+                try:
+                    hours = row.css("span.views-field.views-field-field-hours").css("span.field-content *::text").extract()[0]
+                except (AttributeError, IndexError):
+                    hours = None
+
+                try:
+                    description_text = row.css("div.views-field.views-field-body").css("div.field-content *::text").extract()
+                    description = ''.join(description_text)
+                except (AttributeError, IndexError):
+                    description = ''
+
+                try:
+                    text = row.css("span.views-field.views-field-field-prerequisite").css("span.field-content *::text").extract()
+                    prereqs = process_course_requirements(text, course_code)
+                    prereq_text = ''.join(text)
+                except (AttributeError, IndexError):
+                    prereqs = ''
+                    prereq_text = ''
+
+                try:
+                    text = row.css("span.views-field.views-field-field-corequisite").css("span.field-content *::text").extract()
+                    coreqs = process_course_requirements(text, course_code)
+                    coreq_text = ''.join(text)
+                except (AttributeError, IndexError):
+                    coreqs = ''
+                    coreq_text = ''
+
+                try:
+                    text = row.css("span.views-field.views-field-field-recommended").css("span.field-content *::text").extract()
+                    prep = process_course_requirements(text, course_code)
+                    prep_text = ''.join(text)
+                except (AttributeError, IndexError):
+                    prep = ''
+                    prep_text = ''
+
+                try:
+                    distribution = row.css("span.views-field.views-field-field-distribution-requirements").css("span.field-content *::text").extract()
+                except (AttributeError, IndexError):
+                    distribution = []
+
+                try:
+                    breadth = row.css("span.views-field.views-field-field-breadth-requirements").css("span.field-content *::text").extract()
+                except (AttributeError, IndexError):
+                    breadth = []
+
+                try:
+                    mode_of_delivery = row.css("span.views-field.views-field-field-method-of-delivery").css("span.field-content *::text").extract()
+                except (AttributeError, IndexError):
+                    mode_of_delivery = []
+
+                try:
+                    text = row.css("span.views-field.views-field-field-exclusion").css("span.field-content *::text").extract()
+                    exclusions = process_course_requirements(text, course_code)
+                    exclusion_text = ''.join(text)
+                except (AttributeError, IndexError):
+                    exclusions = ''
+                    exclusion_text = ''
+
                 yield {
-                    "course name": curr_course,
-                    "hours": course_info["hours"],
-                    "description": course_info["description"],
-                    "prerequisites": course_info["prerequisites"],
-                    "corequisites": course_info["corequisites"],
-                    "distribution": course_info["distribution"],
-                    "breadth": course_info["breadth"],
-                    "mode of delivery": course_info["mode of delivery"],
-                    "exclusions": course_info["exclusions"]
+                    "course name": course_name,
+                    "hours": hours,
+                    "description": description,
+                    "prerequisites": prereqs,
+                    "corequisites": coreqs,
+                    "prep": prep,
+                    "distribution": distribution,
+                    "breadth": breadth,
+                    "mode of delivery": mode_of_delivery,
+                    "exclusions": exclusions,
+                    "prereq text": prereq_text,
+                    "coreq text": coreq_text,
+                    "exclusion text": exclusion_text,
+                    "prep text": prep_text,
+                    "course code": course_code
                 }
+
+
+def process_course_requirements(requirements: list[str], curr_course: str) -> str:
+    """
+    Function that takes course requirements as displayed on the website and parses them into a uniform format
+
+    Course requirement format:
+    () are used to group requirements together
+    Separators:
+    - ^ means "and"
+    - | means "or"
+
+    Logically, the operator hierarcy is () -> | -> ^
+    """
+    out = ""
+    for line in requirements:
+        if is_course_format(line) and line != curr_course:
+            # Add a requirement if it is a course, excluding the current course
+            out += line
+        else:
+            # Replace separators represented as words/characters with symbols
+            line = line.replace('++', '') # Some courses have ++ in requirements, should not be interpreted as "and"
+            line = line.replace('+', '^')
+            line = line.replace('; and', '^')
+            line = line.replace('; or', '|')
+            line = line.replace(', and', '^')
+            line = line.replace(', or', '|')
+            line = line.replace('and/or', '|')
+            line = line.replace('and', '^')
+            line = line.replace(';', '^')
+            line = line.replace(',', '^')
+            line = line.replace('/', '|')
+            line = line.replace('or', '|')
+            for i in line:
+                if i in ('|', '^'):
+                    out += i
+    return out
+def is_course_format(s: str) -> bool:
+    """
+    Helper function - Return whether a string is in the format of a course
+
+    >>> is_course_format("CSC111H1")
+    True
+    >>> is_course_format("CSCAA1")
+    False
+    >>> is_course_format("")
+    False
+    """
+    if len(s) == 8 and s[0:3].isalpha() and (s[3:6].isnumeric() or (s[4:6].isnumeric())) and s[
+        6].isalpha() and \
+            s[7].isnumeric():
+        return True
+    else:
+        return False
