@@ -3,7 +3,7 @@ TODO
 """
 from tkinter import *
 import json
-from graph.runner import run
+from runner import run
 
 
 def run_program():
@@ -115,39 +115,60 @@ def run_program():
     exit_button.grid(column=1, row=1)
     course_error = Label(root)
 
-    """ Frame 3: Results."""
-    frame3 = LabelFrame(root, text="Results:", padx=15, pady=15, width=60)
+    """ Frame 3: Course description. """
+    frame3 = LabelFrame(root, text="Course description:", padx=15, pady=15, width=60)
     frame3.grid(row=1, column=2)
     starting_label = Label(frame3, text="Submit a course you want to complete for a recommended\
      \n course path (based on courses that you have completed) \nas well as a brief course description!")
     starting_label.grid(row=0, column=0)
 
+    """ Frame 4: Tree Diagram. """
+    frame4 = LabelFrame(root, text="Tree Diagram:", padx=15, pady=15, width=60)
+    frame4.grid(row=1, column=3)
+
     def display_results(completed: set[str], desired: dict):
-        """ TODO """
+        """ Creates a new course network from the courses provided by the user.
+        Then it updates all the labels for the course description, and draws the new tree diagram.
+        """
         network = run(desired["course code"], completed)
 
         starting_label.destroy()
 
-        for key in desired:
+        for key in keys:
             if len(desired[key]) == 0:
-                value = 'N/A'
+                value = 'none'
             elif isinstance(desired[key], list):
                 value = desired[key][0]
-            elif key == "description":
-                value = 'TODO'
             else:
                 value = desired[key]
+            value = split_string(value)
             descriptions[key].config(text=key + ': ' + value)
-            descriptions[key].pack()
+            descriptions[key].pack(anchor=W)
 
         tree_drawing.config(text=str(network))
-        tree_drawing.grid(row=1, column=0)
+        tree_drawing.pack(side=LEFT)
 
-    descriptions = {key: Label(frame3) for key in file_contents[0]}
-    tree_drawing = Label(frame3)
+    keys = ["course name", "hours", "description", "distribution", "breadth", "mode of delivery",
+            "prereq text", "coreq text", "exclusion text", "prep text"]
+    descriptions = {key: Label(frame3) for key in keys}
+    tree_drawing = Label(frame4)
 
     # run the tkinter window
     root.mainloop()
+
+
+def split_string(string: str) -> str:
+    """ A helper function that splits strings into multiple lines. """
+    words = string.split()
+    new_string = ''
+    line_length = 0
+    for word in words:
+        if len(word) + line_length > 50:
+            new_string += '\n'
+            line_length = 0
+        new_string += word + ' '
+        line_length += len(word) + 1
+    return new_string.strip()
 
 
 if __name__ == '__main__':
