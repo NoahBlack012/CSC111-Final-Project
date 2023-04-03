@@ -15,7 +15,7 @@ from __future__ import annotations
 
 import json
 
-import helper
+import requirements
 from course_network import DatabaseCourseNetwork, PlannerCourseNetwork
 
 
@@ -41,7 +41,7 @@ def get_course_tree(c: str, taken: set[str]) -> PlannerCourseNetwork:
 
         # Add all course prereqs
         for i in data:
-            reqs = helper.parse_course_requirements(i['prerequisites']).get_possible_true_combos()
+            reqs = requirements.parse_course_requirements(i['prerequisites']).get_possible_true_combos()
             course = course_network.get_course(i['course code'])
             course.add_prereqs(reqs)
 
@@ -70,7 +70,7 @@ if __name__ == '__main__':
 
     doctest.testmod()
     python_ta.check_all(config={
-        'extra-imports': ['json', 'course_network', 'helper'],
+        'extra-imports': ['json', 'course_network', 'requirements'],
         'allowed-io': ['get_course_tree'],
         'max-line-length': 120
     })

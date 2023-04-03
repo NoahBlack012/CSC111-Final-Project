@@ -9,7 +9,6 @@ Copyright and Usage Information
 This file is Copyright (c) 2023 Noah Black, Nikita Goncharov and Adam Pralat.
 """
 
-
 def split_string(string: str) -> str:
     """ A helper function that splits longer strings into multiple lines. """
     words = string.split()

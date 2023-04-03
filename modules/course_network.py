@@ -1,4 +1,8 @@
 """
+CSC111 Final Project: Simplifying the UofT Course Selection Process
+
+Description
+===============================
 Course Networks file
 
 Copyright and Usage Information
