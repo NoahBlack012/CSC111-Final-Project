@@ -203,19 +203,15 @@ def is_course_format(s: str) -> bool:
     >>> is_course_format("")
     False
     """
-    if len(s) == 8 and s[0:3].isalpha() and (s[3:6].isnumeric() or (s[4:6].isnumeric())) and s[
-        6].isalpha() and \
-            s[7].isnumeric():
-        return True
-    else:
-        return False
+    return len(s) == 8 and s[0:3].isalpha() and (s[3:6].isnumeric() or (s[4:6].isnumeric())) and s[6].isalpha() \
+           and s[7].isnumeric()
 
 if __name__ == '__main__':
     import python_ta
     import doctest
     doctest.testmod()
     python_ta.check_all(config={
-        'extra-imports': ['scrapy'],  # the names (strs) of imported modules
-        'allowed-io': [],  # the names (strs) of functions that call print/open/input
+        'extra-imports': ['scrapy'],
+        'allowed-io': [],
         'max-line-length': 120
     })

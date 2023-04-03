@@ -14,6 +14,7 @@ This file is Copyright (c) 2023 Noah Black, Nikita Goncharov and Adam Pralat.
 
 import json
 
+
 def clean_data(input_file: str, output_file: str) -> None:
     """
     Clean the course data stored in the input file (A json file) and output the cleaned data in the output file (Another
@@ -28,13 +29,14 @@ def clean_data(input_file: str, output_file: str) -> None:
     out = []
     for line in file:
         # Clean all course requirements
-        line["prerequisites"]  = clean_course_requirements(line["prerequisites"])
+        line["prerequisites"] = clean_course_requirements(line["prerequisites"])
         line["corequisites"] = clean_course_requirements(line["corequisites"])
         line["exclusions"] = clean_course_requirements(line["exclusions"])
         out.append(line)
 
     with open(output_file, 'w') as f:
         json.dump(out, f, indent=4)
+
 
 def clean_course_requirements(requirements: str) -> str:
     """
@@ -50,7 +52,6 @@ def clean_course_requirements(requirements: str) -> str:
     ''
     >>> clean_course_requirements('ARH482H1(^)^^')
     'ARH482H1'
-
     """
     # Replace double separators with single separators
     while '^^' in requirements or '||' in requirements:
@@ -87,4 +88,14 @@ def clean_course_requirements(requirements: str) -> str:
 
     return requirements
 
+
 if __name__ == '__main__':
+    import python_ta
+    import doctest
+
+    doctest.testmod()
+    python_ta.check_all(config={
+        'extra-imports': ['json'],
+        'allowed-io': ['clean_data'],
+        'max-line-length': 120
+    })
