@@ -60,7 +60,7 @@ def run_program():
         add_course_box_button.grid(row=index + 2, column=0)
         delete_course_box_button.grid(row=index + 2, column=1)
 
-    add_course_box_button = Button(frame1, text="Add another course", command=add_course_box)
+    add_course_box_button = Button(frame1, text="Add Another Course", command=add_course_box)
     add_course_box_button.grid(column=0, row=1)
 
     # create a button to remove course boxes
@@ -97,7 +97,7 @@ def run_program():
         # get all completed courses
         completed_courses = set()
         for key in entries:
-            course = entries[key].get()
+            course = entries[key].get().upper()
             if course != '':  # Ignore empty course boxes
                 if course in (course_dict["course code"] for course_dict in file_contents):
                     completed_courses.add(course)
@@ -107,7 +107,7 @@ def run_program():
                     return
 
         # get desired course
-        desired_course = desired_course_box.get()
+        desired_course = desired_course_box.get().upper()
         if desired_course == '':
             course_error.config(text="You must input a desired course.")
             course_error.grid(row=2, column=0, sticky='W')
