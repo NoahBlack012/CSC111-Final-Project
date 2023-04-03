@@ -1,0 +1,10 @@
+# CSC111 Final Project: Simplifying the UofT Course Selection Process - Python Libraries
+
+# Testing and code checking
+python-ta~=2.4.2
+
+# Scraping
+Scrapy~=2.8.0
+
+# Tree data structure implementation
+treelib~=1.6.4
