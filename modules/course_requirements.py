@@ -17,14 +17,14 @@ from __future__ import annotations
 from typing import Optional
 
 
-class RequirementNode:
+class RequirementTree:
     """
-    Class to represent a node in a course requirements
+    Tree to represent course requirements
 
     _text: A string to represent the pure text in the node
     _sep: A string to represent the separator in the requirement
-    _left: The left requirement node
-    _right: The right requirement node
+    _left: The left requirement tree
+    _right: The right requirement tree
 
     Representation Invariants:
     - self._left is None == self._right is None
@@ -32,16 +32,19 @@ class RequirementNode:
     """
     _text: str
     _sep: Optional[str]
-    _left: Optional[RequirementNode]
-    _right: Optional[RequirementNode]
+    _left: Optional[RequirementTree]
+    _right: Optional[RequirementTree]
 
-    def __init__(self, text) -> None:
+    def __init__(self, text: str) -> None:
         self._text = text
         self._right = None
         self._left = None
         self._sep = None
 
     def get_truth_value(self, user_courses: set[str]) -> bool:
+        """
+        Return whether or not the given courses fufill the requirements for the given node
+        """
         if is_course_format(self._text) or self._text == '':
             # Base case - self._text is just a single courses
             # If the text is empty - There are no specific prereqs
@@ -75,15 +78,17 @@ class RequirementNode:
         True
         """
         if self._text == '':
+            # Base case - No text in tree text, no prerequsities
             return [set()]
         elif is_course_format(self._text):
+            # Second base case, text is just a course
             return [{self._text}]
         else:
+            # Get the result of calling the left and right subtrees recurively
             if self._left is not None:
                 left_rec = self._left.get_possible_true_combos()
             else:
                 left_rec = []
-
             if self._right is not None:
                 right_rec = self._right.get_possible_true_combos()
             else:
@@ -94,17 +99,17 @@ class RequirementNode:
 
                 combos_so_far = []
 
-                for i in range(0, len(left_rec)):
-                    for j in range(0, len(right_rec)):
-                        if left_rec[i].union(right_rec[j]) not in combos_so_far:
-                            combos_so_far.append(left_rec[i].union(right_rec[j]))
+                for left in left_rec:
+                    for right in right_rec:
+                        if left.union(right) not in combos_so_far:
+                            combos_so_far.append(left.union(right))
                 return combos_so_far
             else:
                 # If the separator is or, either the left or right nodes must return true for the
                 # node to have a truth value of true
                 return left_rec + right_rec
 
-    def set_node_attributes(self, sep: str, left: RequirementNode, right: RequirementNode) -> None:
+    def set_node_attributes(self, sep: str, left: RequirementTree, right: RequirementTree) -> None:
         """
         Set the attributes of the given node
         """
@@ -113,7 +118,7 @@ class RequirementNode:
         self._right = right
 
 
-def parse_course_requirements(requirements: str) -> RequirementNode:
+def parse_course_requirements(requirements: str) -> RequirementTree:
     """
     Parse a course requirement string into a _Node (_Node will be the root of the tree)
 
@@ -133,31 +138,11 @@ def parse_course_requirements(requirements: str) -> RequirementNode:
 
     if is_course_format(requirements) or requirements == '':
         # Base case - Requirements is just a single course or is an empty string
-        return RequirementNode(requirements)
+        return RequirementTree(requirements)
     else:
-        curr_node = RequirementNode(requirements)
+        curr_node = RequirementTree(requirements)
 
-        # Group courses by brackets with separators between brackets included in list
-        # If a bracket/separator is encountered, reset curr_item?? If in brackets, ignore separators
-        bracket_level = 0
-        curr_group = ''
-        course_groups = []
-        for i in requirements:
-            if i == '(':
-                bracket_level += 1
-            elif i == ')':
-                bracket_level -= 1
-
-            if bracket_level == 0 and i in ('|', '^'):
-                course_groups.append(curr_group)
-                curr_group = ''
-                course_groups.append(i)
-            elif bracket_level > 0 and i in ('|', '^'):
-                curr_group += i
-            elif i not in ('|', '^'):
-                curr_group += i
-        if curr_group != '':
-            course_groups.append(curr_group)
+        course_groups = group_courses(requirements)
 
         if '^' in course_groups:
             # If ^ in grouped list - Search for first ^ in grouped list
@@ -185,6 +170,43 @@ def parse_course_requirements(requirements: str) -> RequirementNode:
             parse_course_requirements(second_group)
         )
         return curr_node
+
+
+def group_courses(requirements: str) -> list[str]:
+    """
+    Group courses into individual logical units at the top bracket level
+
+    >>> group_courses('CSC110Y1|(CSC108H1^CSC148H1)')
+    ['CSC110Y1', '|', '(CSC108H1^CSC148H1)']
+    >>> group_courses('PHY132H1|PHY152H1^(MAT135H1^MAT136H1)|MAT137Y1|MAT157Y1')
+    ['PHY132H1', '|', 'PHY152H1', '^', '(MAT135H1^MAT136H1)', '|', 'MAT137Y1', '|', 'MAT157Y1']
+    """
+    # Group courses by brackets with separators between brackets included in list
+    bracket_level = 0
+    curr_group = ''
+    groups = []
+    for i in requirements:
+        # Update the current bracket level
+        if i == '(':
+            bracket_level += 1
+        elif i == ')':
+            bracket_level -= 1
+
+        if bracket_level == 0 and i in ('|', '^'):
+            # Only add separators to course_groups list if you are in the top bracket level
+            groups.append(curr_group)
+            curr_group = ''
+            groups.append(i)
+        elif bracket_level > 0 and i in ('|', '^'):
+            # If you are not in the top bracket level, add the separator to the current group
+            curr_group += i
+        elif i not in ('|', '^'):
+            # Always add non-separator characters to current group
+            curr_group += i
+    if curr_group != '':
+        groups.append(curr_group)
+    return groups
+
 
 def is_enclosed_brackets(s: str) -> bool:
     """
@@ -225,7 +247,8 @@ def is_course_format(s: str) -> bool:
     False
     """
     return len(s) == 8 and s[0:3].isalpha() and (s[3:6].isnumeric() or (s[4:6].isnumeric())) and s[6].isalpha() and \
-            s[7].isnumeric()
+        s[7].isnumeric()
+
 
 if __name__ == '__main__':
     import python_ta
@@ -234,5 +257,6 @@ if __name__ == '__main__':
     python_ta.check_all(config={
         'extra-imports': [],
         'allowed-io': [''],
-        'max-line-length': 120
+        'max-line-length': 120,
+        'disable': ['too-many-nested-blocks']
     })

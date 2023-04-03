@@ -99,3 +99,6 @@ if __name__ == '__main__':
         'allowed-io': ['clean_data'],
         'max-line-length': 120
     })
+
+    # Example usage of clean_data
+    clean_data('scraping/example.json', 'example_cleaned.json')
