@@ -32,7 +32,8 @@ def run_program() -> None:
     \nThis program takes in the course that a student wants to complete, as well as the courses the student has\
  already completed (if none, leave the boxes empty),\nand recommends the shortest sequence of courses for the student\
  so that they can complete all required prerequisites and corequisites for their desired course.\
-    \nPlease refer to the project report for more details.\n").grid(row=0, column=0, columnspan=4)
+    \nPlease refer to the project report for more details.\nNote that all courses must be entered in their full "
+                        "8 character form.").grid(row=0, column=0, columnspan=4)
 
     # Frame 1: For Completed Courses
     frame1 = tk.LabelFrame(root, text="What courses have you completed?", padx=15, pady=15)
