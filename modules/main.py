@@ -114,6 +114,7 @@ def run_program():
         else:
             for i in range(len(file_contents)):
                 if desired_course == file_contents[i]["course code"]:
+                    course_error.grid_remove()
                     display_results(completed_courses, file_contents[i])
                     return
             # If the course is not a valid course, let the user know
