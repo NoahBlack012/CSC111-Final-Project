@@ -1,5 +1,12 @@
 """CSC111 Final Project: Simplifying the UofT Course Selection Process
-This is the main
+
+Description
+===============================
+This is the main file, which uses tkinter to display a window and interact with the user.
+
+Copyright and Usage Information
+===============================
+This file is Copyright (c) 2023 Noah Black, Nikita Goncharov and Adam Pralat.
 """
 from tkinter import *
 import json
@@ -24,11 +31,11 @@ def run_program():
     # Introduction
     Label(root, text="Welcome to the UofT Course Selection Simplifier!\
     \nThis program takes in the courses that a student wants to complete, as well as the courses the student has\
- already completed,\nand recommends the shortest sequence of courses for the student so that they can complete\
- all required prerequisites and corequisites for their desired course.\
+ already completed (if none, leave the boxes empty),\nand recommends the shortest sequence of courses for the student\
+ so that they can complete all required prerequisites and corequisites for their desired course.\
     \nPlease refer to the project report for more details.").grid(row=0, column=0, columnspan=3)
 
-    """ Frame 1: For completed courses. """
+    """ Frame 1: For Completed Courses """
     frame1 = LabelFrame(root, text="What courses have you completed?", padx=15, pady=15)
     frame1.grid(row=1, column=0)
     # create labels and entry boxes for the user to input completed courses
@@ -75,7 +82,7 @@ def run_program():
 
     delete_course_box_button = Button(frame1, text="Remove last course", command=delete_course_box)
 
-    """ Frame 2: For desired course. """
+    """ Frame 2: For Desired Course """
     frame2 = LabelFrame(root, text="What course do you want to complete?", padx=15, pady=15)
     frame2.grid(row=1, column=1)
     # create labels and an entry box for the user to input their desired course
