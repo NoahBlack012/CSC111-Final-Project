@@ -6,7 +6,7 @@ from __future__ import annotations
 from typing import Optional
 
 from treelib import Tree
-
+import itertools
 
 class DatabaseCourse:
     """
@@ -145,6 +145,47 @@ class DatabaseCourseNetwork:
         # combined.length = combined.length + start.duration
         # return combined
 
+    def recur2(self, start: DatabaseCourse) -> list[PlannerCourseNetwork]:
+        """
+        recursive traversal of courses and prereqs
+        """
+
+        if start.prerequisites == [set()]:
+            return [PlannerCourseNetwork(start)]
+
+        possible_prereqs = start.prerequisites
+
+        networks = []
+        for req in possible_prereqs:
+            if req.issubset(self.courses_taken):
+                networks.append(PlannerCourseNetwork(start))
+        for reqs in possible_prereqs:
+            prereq_networks_to_merge = []
+            invalid_course = False
+            for req in reqs:
+                if req in self.courses_taken:
+                    continue
+                course = self.get_course(req)
+                if course is not None:
+                    possible_req_planner_networks = self.recur2(course)
+                    prereq_networks_to_merge.append(possible_req_planner_networks)
+                # elif req[-1] == '1':
+                #     raise Exception('unknown prerequisite \'' + req + '\' for course \'' + start.code + '\'')
+                else:
+                    invalid_course = True
+
+            if invalid_course:
+                continue
+
+            possible_network_combos = [list(i) for i in itertools.product(*prereq_networks_to_merge)]
+            for prereq_network_combo in possible_network_combos:
+                if prereq_network_combo != []:
+                    merged_network = PlannerCourseNetwork()
+                    merged_network.merge_networks(list(prereq_network_combo), start)
+                    networks.append(merged_network)
+
+        return networks
+
 
 class PlannerSlot:
     """
@@ -202,7 +243,6 @@ class PlannerCourseNetwork:
         #     network.end = slot
 
         self.end = slot
-
         self.length = max([network.length for network in networks]) + end.duration
 
     def __str__(self):
@@ -227,6 +267,25 @@ class PlannerCourseNetwork:
         ret = str(tree)
         return ret
 
+    def get_duration(self, visited: set[str]) -> int:
+        """
+        Return the duration of the given network
+        """
+        duration_so_far = 0
+
+        for course in self.courses:
+            if isinstance(course, set):
+                for c in course:
+                    if c.data.code not in visited:
+                        duration_so_far += c.data.duration
+                        visited = visited.union({c.data.code})
+            else:
+                if course.data.code not in visited:
+                    duration_so_far += course.data.duration
+                    visited = visited.union({course.data.code})
+        return duration_so_far
+
+
     def _str_recur_helper(self, tree: Tree, helper_dict: list, root: str) -> Tree:
         """TODO"""
 
@@ -240,3 +299,26 @@ class PlannerCourseNetwork:
             self._str_recur_helper(tree, helper_dict, prereq)
 
         return tree
+
+# def merge_planner_networks(course_networks: dict[str, PlannerCourseNetwork], database: DatabaseCourseNetwork) -> list[PlannerCourseNetwork]:
+#     """
+#     Merge 2 planner networks
+#     Used for fufilling 2 course prerequsities at the same time
+#
+#     Preconditions:
+#     - Every key in course_networks is a valid course code
+#     - Every value in course_networks is a valid PlannerCourseNetwork for the given course
+#     """
+#     import itertools
+#     all_network_combos = itertools.product(course_networks.values())
+#
+#     min_so_far = all_network_combos[0]
+#     for i in all_network_combos:
+#
+#
+#     # Select the network combination with the lowest score
+#
+#     return lowest_score_combo
+
+# def get_multi_network_score(networks: list[PlannerCourseNetwork]) -> int:
+#     for cour
