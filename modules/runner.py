@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import json
 
-import requirements
+import course_requirements
 from course_network import DatabaseCourseNetwork, PlannerCourseNetwork
 
 
@@ -44,7 +44,7 @@ def get_course_tree(c: str, taken: set[str]) -> PlannerCourseNetwork:
 
         # Add all course prereqs
         for i in data:
-            reqs = requirements.parse_course_requirements(i['prerequisites']).get_possible_true_combos()
+            reqs = course_requirements.parse_course_requirements(i['prerequisites']).get_possible_true_combos()
             course = course_network.get_course(i['course code'])
             course.add_prereqs(reqs)
 
