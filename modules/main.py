@@ -34,7 +34,7 @@ def run_program():
     \nThis program takes in the courses that a student wants to complete, as well as the courses the student has\
  already completed (if none, leave the boxes empty),\nand recommends the shortest sequence of courses for the student\
  so that they can complete all required prerequisites and corequisites for their desired course.\
-    \nPlease refer to the project report for more details.").grid(row=0, column=0, columnspan=3)
+    \nPlease refer to the project report for more details.").grid(row=0, column=0, columnspan=4)
 
     """ Frame 1: For Completed Courses """
     frame1 = LabelFrame(root, text="What courses have you completed?", padx=15, pady=15)
@@ -143,7 +143,6 @@ def run_program():
         tree_drawing.pack()
 
     tree_drawing = Label(frame3)
-
 
     """ Frame 4: Course Search """
     frame4 = LabelFrame(root, text="Course Search:", padx=15, pady=15, width=60)
