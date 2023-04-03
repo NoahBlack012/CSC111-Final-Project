@@ -45,15 +45,7 @@ def run(c: str, taken: set[str]) -> PlannerCourseNetwork:
 
         return planner
 
-
-if __name__ == '__main__':
-    c = 'MGY378H1'
-    taken = set()
-    planner = run(c, taken)
-    print(f"Length: {planner.length}")
-    print(str(planner))
-    print("-------------------------------")
-    print()
+def run2(c: str, taken: set[str]) -> PlannerCourseNetwork:
     json_file = "../data-processing/courses_clean.json"
 
     with open(json_file) as f:
@@ -82,5 +74,20 @@ if __name__ == '__main__':
             min_lengths = [i]
             min_length = i.length
 
-    optimal_tree = min(min_lengths, key=lambda x: x.get_duration(taken))
-    print (str(optimal_tree))
+    optimal_network = min(min_lengths, key=lambda x: x.get_duration(taken))
+
+    return optimal_network
+
+
+if __name__ == '__main__':
+    c = 'MGY378H1'
+    taken = set()
+    planner = run(c, taken)
+    print(f"Length: {planner.length}")
+    print(str(planner))
+    print("-------------------------------")
+    print()
+
+    optimal_network = run2(c, taken)
+
+    print(str(optimal_network))
