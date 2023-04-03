@@ -112,11 +112,10 @@ def run_program():
             course_error.config(text="You must input a desired course.")
             course_error.grid(row=2, column=0, sticky='W')
         else:
-            for i in range(len(file_contents)):
-                if desired_course == file_contents[i]["course code"]:
-                    course_error.grid_remove()
-                    display_results(completed_courses, file_contents[i])
-                    return
+            if any(desired_course == courses["course code"] for courses in file_contents):
+                course_error.grid_remove()
+                display_results(completed_courses, desired_course)
+                return
             # If the course is not a valid course, let the user know
             course_error.config(text="'" + desired_course + "' is not a valid course.")
             course_error.grid(row=2, column=0, sticky='W')
@@ -127,45 +126,81 @@ def run_program():
     exit_button.grid(column=1, row=1)
     course_error = Label(root)
 
-    """ Frame 3: Course Overview """
-    frame3 = LabelFrame(root, text="Course Overview:", padx=15, pady=15, width=60)
+    """ Frame 3: Recommened Path """
+    frame3 = LabelFrame(root, text="Recommened Path:", padx=15, pady=15, width=60)
     frame3.grid(row=1, column=2)
-    starting_label = Label(frame3, text="Submit a course you want to complete for a recommended\
-     \n course path (based on courses that you have completed) \nas well as a brief course overview!")
-    starting_label.grid(row=0, column=0)
+    starting_label = Label(frame3, text="Submit a course you want to complete for a recommended course path.")
+    starting_label.pack()
 
-    """ Frame 4: Recommened Path """
-    frame4 = LabelFrame(root, text="Recommened Path:", padx=15, pady=15, width=60)
-    frame4.grid(row=1, column=3)
-
-    def display_results(completed: set[str], desired: dict):
-        """ Creates a new course network from the courses provided by the user.
-        Then it updates all the labels for the course description, and draws the recommended path diagram.
+    def display_results(completed: set[str], desired: str):
+        """ Creates a new course network from the courses provided by the user,
+        and draws the recommended path diagram.
         """
-        network = run(desired["course code"], completed)
+        network = run(desired, completed)
 
         starting_label.destroy()
-
-        for key in keys:
-            if len(desired[key]) == 0:
-                value = 'none'
-            elif isinstance(desired[key], list):
-                value = desired[key][0]
-            else:
-                value = desired[key]
-            value = split_string(value)
-            header = key.replace(" text", 's')
-            descriptions[key].config(text=header.title() + ': ' + value, justify="left")
-            descriptions[key].pack(anchor="w")
-
         tree_drawing.config(text=str(network), justify="left")
         tree_drawing.pack()
+
+    tree_drawing = Label(frame3)
+
+
+    """ Frame 4: Course Search """
+    frame4 = LabelFrame(root, text="Course Search:", padx=15, pady=15, width=60)
+    frame4.grid(row=1, column=3)
+    # create labels and an entry box for the user to search courses
+    Label(frame4, text="Course Code:").grid()
+    course_search_box = Entry(frame4)
+    course_search_box.grid(row=0, column=1)
+
+    # create a button to submit courses
+    def search():
+        """ If all the course is valid, search for it and provide a course overview in another window. """
+        # get desired course
+        search_course = course_search_box.get().upper()
+        if search_course == '':
+            course_error.config(text="You must input a desired course.")
+            course_error.grid(row=2, column=0, sticky='W')
+        else:
+            for i in range(len(file_contents)):
+                if search_course == file_contents[i]["course code"]:
+                    course_details = file_contents[i]
+                    course_error.grid_remove()
+
+                    # create a new window
+                    new_window = Toplevel(root)
+                    new_window.title("Course Search: " + search_course)
+
+                    # displays the course overview
+                    descriptions = {key: Label(new_window) for key in keys}
+                    for key in keys:
+                        if len(course_details[key]) == 0:
+                            value = 'none'
+                        elif isinstance(course_details[key], list):
+                            value = course_details[key][0]
+                        else:
+                            value = course_details[key]
+                        value = split_string(value)
+                        header = key.replace(" text", 's')
+                        descriptions[key].config(text=header.title() + ': ' + value, justify="left")
+                        descriptions[key].pack(anchor="w")
+
+                    exit_window = Button(new_window, text="Exit Course Search", command=new_window.destroy)
+                    exit_window.pack()
+
+                    new_window.mainloop()
+
+                    return
+                # If the course is not a valid course, let the user know
+                course_error.config(text="'" + search_course + "' is not a valid course.")
+                course_error.grid(row=2, column=0, sticky='W')
+
+    search_button = Button(frame4, text="Search", command=search)
+    search_button.grid(column=0, row=1)
 
     # list of keys/headers we want to display
     keys = ["course name", "hours", "description", "distribution", "breadth", "mode of delivery",
             "prereq text", "coreq text", "exclusion text", "prep text"]
-    descriptions = {key: Label(frame3) for key in keys}
-    tree_drawing = Label(frame4)
 
     # run the tkinter window
     root.mainloop()
