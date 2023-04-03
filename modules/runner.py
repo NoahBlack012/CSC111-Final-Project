@@ -46,7 +46,7 @@ def run(c: str, taken: set[str]) -> PlannerCourseNetwork:
 
         return planner
 
-def run_multiple(courses: list[str], taken: set[str]) -> list[PlannerCourseNetwork]:
+def run_multiple(courses: set[str], taken: set[str]) -> list[PlannerCourseNetwork]:
     json_file = "../data-processing/courses_clean.json"
 
     with open(json_file) as f:

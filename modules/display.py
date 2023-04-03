@@ -10,7 +10,7 @@ This file is Copyright (c) 2023 Noah Black, Nikita Goncharov and Adam Pralat.
 """
 from tkinter import *
 import json
-from runner import run2
+from runner import run_multiple
 from helpers import split_string
 
 
@@ -30,7 +30,7 @@ def run_program():
     \nThis program takes in the courses that a student wants to complete, as well as the courses the student has\
  already completed (if none, leave the boxes empty),\nand recommends the shortest sequence of courses for the student\
  so that they can complete all required prerequisites and corequisites for their desired course.\
-    \nPlease refer to the project report for more details.").grid(row=0, column=0, columnspan=4)
+    \nPlease refer to the project report for more details.\n").grid(row=0, column=0, columnspan=4)
 
     """ Frame 1: For Completed Courses """
     frame1 = LabelFrame(root, text="What courses have you completed?", padx=15, pady=15)
@@ -167,11 +167,11 @@ def run_program():
         else:
             course_error.grid_remove()
             starting_label.destroy()
-            network = run2(desired_courses, completed_courses)
+            network = run_multiple(desired_courses, completed_courses)
             tree_drawing.config(text=str(network), justify="left")
 
     submit_button = Button(frame3, text="Submit", command=submit)
-    submit_button.pack()
+    submit_button.pack(side=LEFT)
     exit_button = Button(frame3, text="Exit Program", command=root.destroy)
     exit_button.pack(side=LEFT)
     course_error = Label(root)
@@ -193,7 +193,7 @@ def run_program():
         # get desired course
         search_course = course_search_box.get().upper()
         if search_course == '':
-            course_error.config(text="You must input a desired course.")
+            course_error.config(text="You must input a course code to search.")
             course_error.grid(row=2, column=0, sticky='W')
         else:
             for i in range(len(file_contents)):
