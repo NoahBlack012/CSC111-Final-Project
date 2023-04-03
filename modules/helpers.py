@@ -16,7 +16,7 @@ def split_string(string: str) -> str:
     new_string = ''
     line_length = 0
     for word in words:
-        if len(word) + line_length > 80:
+        if len(word) + line_length > 100:
             new_string += '\n'
             line_length = 0
         new_string += word + ' '

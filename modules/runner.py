@@ -1,6 +1,15 @@
 """
-temp Runner file TODO
+Course Networks file
+
+Copyright and Usage Information
+===============================
+
+This file is part of a Course Project for CSC111H1 of the University of
+Toronto.
+
+Copyright (c) 2023 Nikita Goncharov, Noah Black, Adam Pralat
 """
+
 
 from __future__ import annotations
 
@@ -13,7 +22,7 @@ from course_network import DatabaseCourseNetwork, PlannerCourseNetwork
 
 def run(c: str, taken: set[str]) -> PlannerCourseNetwork:
     """
-    TODO
+    Runner file that returns a PlannerCourseNetwork for the given course code and set of taken courses' codes
     """
     json_file = "../data-processing/courses_clean.json"
 
@@ -38,9 +47,6 @@ def run(c: str, taken: set[str]) -> PlannerCourseNetwork:
         return planner
 
 def run_multiple(courses: list[str], taken: set[str]) -> list[PlannerCourseNetwork]:
-    """
-
-    """
     json_file = "../data-processing/courses_clean.json"
 
     with open(json_file) as f:
