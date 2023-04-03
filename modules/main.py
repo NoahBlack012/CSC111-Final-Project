@@ -1,5 +1,5 @@
-"""
-TODO
+"""CSC111 Final Project: Simplifying the UofT Course Selection Process
+This is the main
 """
 from tkinter import *
 import json
@@ -10,6 +10,8 @@ def run_program():
     """
     Creates a tkinter window which allows the user to input the course codes of the courses they have already
     completed, as well as the course they want to complete (desired course).
+    Once they submit their courses, they will get back a breif course overview
+    and a tree diagram of the recommended course path.
     """
     # load course data
     with open('../data-processing/courses_clean.json') as file:
@@ -17,13 +19,14 @@ def run_program():
 
     # create the tkinter window
     root = Tk()
-    # root.attributes('-fullscreen', True)
     root.title("Simplifying the Course Selection Process")
 
     # Introduction
-    Label(root, text="\
-    Welcome to ...\
-    Please refer to the project report for more details.").grid(row=0, column=0, columnspan=3)
+    Label(root, text="Welcome to the UofT Course Selection Simplifier!\
+    \nThis program takes in the courses that a student wants to complete, as well as the courses the student has\
+ already completed,\nand recommends the shortest sequence of courses for the student so that they can complete\
+ all required prerequisites and corequisites for their desired course.\
+    \nPlease refer to the project report for more details.").grid(row=0, column=0, columnspan=3)
 
     """ Frame 1: For completed courses. """
     frame1 = LabelFrame(root, text="What courses have you completed?", padx=15, pady=15)
@@ -115,20 +118,20 @@ def run_program():
     exit_button.grid(column=1, row=1)
     course_error = Label(root)
 
-    """ Frame 3: Course description. """
-    frame3 = LabelFrame(root, text="Course description:", padx=15, pady=15, width=60)
+    """ Frame 3: Course Overview """
+    frame3 = LabelFrame(root, text="Course Overview:", padx=15, pady=15, width=60)
     frame3.grid(row=1, column=2)
     starting_label = Label(frame3, text="Submit a course you want to complete for a recommended\
      \n course path (based on courses that you have completed) \nas well as a brief course description!")
     starting_label.grid(row=0, column=0)
 
-    """ Frame 4: Tree Diagram. """
-    frame4 = LabelFrame(root, text="Tree Diagram:", padx=15, pady=15, width=60)
+    """ Frame 4: Recommened Path """
+    frame4 = LabelFrame(root, text="Recommened Path:", padx=15, pady=15, width=60)
     frame4.grid(row=1, column=3)
 
     def display_results(completed: set[str], desired: dict):
         """ Creates a new course network from the courses provided by the user.
-        Then it updates all the labels for the course description, and draws the new tree diagram.
+        Then it updates all the labels for the course description, and draws the recommended path diagram.
         """
         network = run(desired["course code"], completed)
 
@@ -142,12 +145,14 @@ def run_program():
             else:
                 value = desired[key]
             value = split_string(value)
-            descriptions[key].config(text=key + ': ' + value)
-            descriptions[key].pack(anchor=W)
+            header = key.replace(" text", 's')
+            descriptions[key].config(text=header.title() + ': ' + value, justify="left")
+            descriptions[key].pack(anchor="w")
 
-        tree_drawing.config(text=str(network))
-        tree_drawing.pack(side=LEFT)
+        tree_drawing.config(text=str(network), justify="left")
+        tree_drawing.pack()
 
+    # list of keys/headers we want to display
     keys = ["course name", "hours", "description", "distribution", "breadth", "mode of delivery",
             "prereq text", "coreq text", "exclusion text", "prep text"]
     descriptions = {key: Label(frame3) for key in keys}
@@ -158,12 +163,12 @@ def run_program():
 
 
 def split_string(string: str) -> str:
-    """ A helper function that splits strings into multiple lines. """
+    """ A helper function that splits longer strings into multiple lines. """
     words = string.split()
     new_string = ''
     line_length = 0
     for word in words:
-        if len(word) + line_length > 50:
+        if len(word) + line_length > 80:
             new_string += '\n'
             line_length = 0
         new_string += word + ' '
