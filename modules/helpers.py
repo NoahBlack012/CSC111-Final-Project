@@ -9,6 +9,7 @@ Copyright and Usage Information
 This file is Copyright (c) 2023 Noah Black, Nikita Goncharov and Adam Pralat.
 """
 
+
 def split_string(string: str) -> str:
     """ A helper function that splits longer strings into multiple lines. """
     words = string.split()
@@ -21,3 +22,15 @@ def split_string(string: str) -> str:
         new_string += word + ' '
         line_length += len(word) + 1
     return new_string.strip()
+
+
+if __name__ == '__main__':
+    import python_ta
+    import doctest
+
+    doctest.testmod()
+    python_ta.check_all(config={
+        'extra-imports': ['json', 'course_network', 'requirements'],
+        'allowed-io': ['get_course_tree'],
+        'max-line-length': 120
+    })

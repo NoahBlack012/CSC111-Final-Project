@@ -75,6 +75,8 @@ class DatabaseCourseNetwork:
         Raise a ValueError if the second last character is not an H or a Y
 
         """
+        duration = 0
+        credit = 0.0
         if code[-2] == 'H':
             duration = 1
             credit = 0.5
@@ -82,8 +84,6 @@ class DatabaseCourseNetwork:
             duration = 2
             credit = 1.0
         else:
-            duration = 0
-            credit = 0.0
             raise ValueError
 
         new_course = DatabaseCourse(code, credit, duration)
@@ -272,16 +272,24 @@ class PlannerCourseNetwork:
         credits_so_far = 0
 
         for course in self.courses:
+            # If the course prereqs are a set, go through each course in the set
             if isinstance(course, set):
                 for c in course:
-                    if c.data.code not in visited:
-                        credits_so_far += c.data.duration
-                        visited = visited.union({c.data.code})
+                    credits_so_far, visited = get_number_of_credits(c.data, visited, credits_so_far)
             else:
-                if course.data.code not in visited:
-                    credits_so_far += course.data.duration
-                    visited = visited.union({course.data.code})
+                credits_so_far, visited = get_number_of_credits(course.data, visited, credits_so_far)
         return credits_so_far
+
+
+def get_number_of_credits(db_course: DatabaseCourse, visited: set[str], curr_credits: int) -> tuple[int, set[str]]:
+    """
+    Return the number of credits so far for the current planner network and the set of visited
+    courses after the given course has been checked
+    """
+    if db_course.code not in visited:
+        return (db_course.duration + curr_credits, visited.union({db_course.code}))
+    else:
+        return (curr_credits, visited)
 
 
 if __name__ == '__main__':
