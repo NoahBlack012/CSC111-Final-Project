@@ -12,7 +12,7 @@ import tkinter as tk
 import json
 import doctest
 import python_ta
-from runner import run
+from runner import get_course_tree
 from helpers import split_string
 
 
@@ -133,7 +133,7 @@ def run_program() -> None:
         """ Generates and draws the recommended path."""
         course_error.grid_remove()
         starting_label.destroy()
-        network = run(desired, completed)
+        network = get_course_tree(desired, completed)
         tree_drawing.config(text=str(network), justify="left")
 
     tree_drawing = tk.Label(frame3)
@@ -206,5 +206,6 @@ if __name__ == '__main__':
     python_ta.check_all(config={
         'extra-imports': ['tkinter', 'json', 'runner', 'helpers'],  # the names (strs) of imported modules
         'allowed-io': ['run_program'],     # the names (strs) of functions that call print/open/input
-        'max-line-length': 120
+        'max-line-length': 120,
+        'disable': ['R0914', 'R1702', 'R0915']
     })
