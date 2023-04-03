@@ -29,7 +29,7 @@ def run_program() -> None:
 
     # Introduction
     tk.Label(root, text="Welcome to the UofT Course Selection Simplifier!\
-    \nThis program takes in the courses that a student wants to complete, as well as the course the student has\
+    \nThis program takes in the course that a student wants to complete, as well as the courses the student has\
  already completed (if none, leave the boxes empty),\nand recommends the shortest sequence of courses for the student\
  so that they can complete all required prerequisites and corequisites for their desired course.\
     \nPlease refer to the project report for more details.\n").grid(row=0, column=0, columnspan=4)
