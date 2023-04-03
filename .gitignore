@@ -113,6 +113,11 @@ pip-selfcheck.json
 .idea/**/dictionaries
 .idea/**/shelf
 
+# Pyre type checker
+.pyre/
+
+#Pycharm
+.idea/
 # AWS User-specific
 .idea/**/aws.xml
 

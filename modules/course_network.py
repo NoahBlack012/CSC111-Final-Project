@@ -1,23 +1,36 @@
 """
-TOOD: Add file docstring
+Course Networks file
+
+Copyright and Usage Information
+===============================
+
+This file is part of a Course Project for CSC111H1 of the University of
+Toronto.
+
+Copyright (c) 2023 Nikita Goncharov, Noah Black, Adam Pralat
 """
 
 from __future__ import annotations
 from typing import Optional
 
 from treelib import Tree
-
+import itertools
 
 class DatabaseCourse:
     """
-    TODO: Add docstring
+    A course node object for the database network.
+
+    Instance Attriutes:
+        - code: course code
+        - credit_value: the credit value of the course
+        - duration: the duration of the course in terms
+        - prerequisites: the list of all possible course combinations that fulfill the course's prerequisites
 
     """
 
     code: str
     credit_value: float
     duration: int
-    # corequisites: BoolOp | None
     prerequisites: list[set[str]]
 
     def __init__(self, code: str, credit_value: float, duration: int):
@@ -32,8 +45,11 @@ class DatabaseCourse:
 
 class DatabaseCourseNetwork:
     """
-    Graph to represent all courses
-    TODO: Add docstring
+    Graph to represent the database of all courses
+
+    Instance Attributes:
+        - courses: a dictionary mapping course codes into DatabaseCourse objects
+        - courses_taken: the set of course that the user has already taken
 
     """
 
@@ -46,7 +62,10 @@ class DatabaseCourseNetwork:
 
     def add_course(self, code: str) -> DatabaseCourse:
         """
-        TODO
+        Add a course to the network, and return it.
+
+        Preconditions:
+
         """
         if code[-2] == 'H':
             duration = 1
@@ -60,15 +79,15 @@ class DatabaseCourseNetwork:
         new_course = DatabaseCourse(code, credit, duration)
 
         self.courses[code] = new_course
-        # self.courses.append(new_course)
 
         return new_course
 
     def get_course(self, code: str) -> DatabaseCourse | None:
-        """TODO"""
-        # for course in self.courses:
-        #     if course.code == code:
-        #         return course
+        """
+        Get the DatabaseCourse for the corresponiding course code.
+
+        If courses doesn't exit, return None
+        """
 
         if code in self.courses:
             return self.courses[code]
@@ -76,7 +95,7 @@ class DatabaseCourseNetwork:
 
     def recur(self, start: DatabaseCourse) -> PlannerCourseNetwork:
         """
-        recursive traversal of courses and prereqs
+        Recursive function that returns a PlannerCourseNetwork for a given DatabaseCourse
         """
 
         if start.prerequisites == [set()]:
@@ -96,8 +115,6 @@ class DatabaseCourseNetwork:
             course = self.get_course(req)
             if course is not None:
                 prereq_networks_to_merge.append(self.recur(course))
-            # elif req[-1] == '1':
-            #     raise Exception('unknown prerequisite \'' + req + '\' for course \'' + start.code + '\'')
 
         shortest_merged_network = PlannerCourseNetwork()
         shortest_merged_network.merge_networks(prereq_networks_to_merge, start)
@@ -111,8 +128,6 @@ class DatabaseCourseNetwork:
                 course = self.get_course(req)
                 if course is not None:
                     prereq_networks_to_merge.append(self.recur(course))
-                # elif req[-1] == '1':
-                #     raise Exception('unknown prerequisite \'' + req + '\' for course \'' + start.code + '\'')
                 else:
                     invalid_course = True
 
@@ -145,22 +160,73 @@ class DatabaseCourseNetwork:
         # combined.length = combined.length + start.duration
         # return combined
 
+    def recur2(self, start: DatabaseCourse) -> list[PlannerCourseNetwork]:
+        """
+        recursive traversal of courses and prereqs
+        """
+
+        if start.prerequisites == [set()]:
+            return [PlannerCourseNetwork(start)]
+
+        possible_prereqs = start.prerequisites
+
+        networks = []
+        for req in possible_prereqs:
+            if req.issubset(self.courses_taken):
+                networks.append(PlannerCourseNetwork(start))
+        for reqs in possible_prereqs:
+            prereq_networks_to_merge = []
+            invalid_course = False
+            for req in reqs:
+                if req in self.courses_taken:
+                    continue
+                course = self.get_course(req)
+                if course is not None:
+                    possible_req_planner_networks = self.recur2(course)
+                    prereq_networks_to_merge.append(possible_req_planner_networks)
+                # elif req[-1] == '1':
+                #     raise Exception('unknown prerequisite \'' + req + '\' for course \'' + start.code + '\'')
+                else:
+                    invalid_course = True
+
+            if invalid_course:
+                continue
+
+            possible_network_combos = [list(i) for i in itertools.product(*prereq_networks_to_merge)]
+            for prereq_network_combo in possible_network_combos:
+                if prereq_network_combo != []:
+                    merged_network = PlannerCourseNetwork()
+                    merged_network.merge_networks(list(prereq_network_combo), start)
+                    networks.append(merged_network)
+
+        return networks
+
 
 class PlannerSlot:
     """
-    TODO
+    A slot node object for the PlannerCourseNetwork
+
+    Instace Attributes:
+        - data: the DatabaseCourse that is stored in the slot
+        - next_course: the next course to take according to planner
     """
-    data: DatabaseCourse | set[DatabaseCourse]
+    data: DatabaseCourse
     next_course: Optional[PlannerSlot]
 
-    def __init__(self, data: DatabaseCourse | set[DatabaseCourse]):
+    def __init__(self, data: DatabaseCourse):
         self.data = data
         self.next_course = None
 
 
 class PlannerCourseNetwork:
     """
-    TODO
+    Tree-like network to represnt the sequence of courses to take
+
+    Instance Attributes:
+        - starts: list of starting slots in the planner
+        - courses: list of all slots in the planner
+        - end: the last course in the planner (root)
+        - length: the duration of the longest sequence of courses in the planner, in terms
     """
     starts: list[PlannerSlot]
     courses: list[PlannerSlot]
@@ -182,9 +248,9 @@ class PlannerCourseNetwork:
             self.courses = []
             self.length = 0
 
-    def merge_networks(self, networks: list[PlannerCourseNetwork], end: DatabaseCourse | set[DatabaseCourse]) -> None:
+    def merge_networks(self, networks: list[PlannerCourseNetwork], end: DatabaseCourse) -> None:
         """
-        TODO
+        Merge a list of PlannerCourseNetworks to all end at a slot containing the given DatabaseCourse
         """
         for network in networks:
             for start in network.starts:
@@ -198,15 +264,13 @@ class PlannerCourseNetwork:
         for network in networks:
             network.end.next_course = slot
 
-        # for network in networks:
-        #     network.end = slot
-
         self.end = slot
-
         self.length = max([network.length for network in networks]) + end.duration
 
     def __str__(self):
-        """TODO"""
+        """
+        Return the string representation of the PlannerCourseNetwork
+        """
 
         helper_dict = []
         root = ''
@@ -227,8 +291,29 @@ class PlannerCourseNetwork:
         ret = str(tree)
         return ret
 
+    def get_duration(self, visited: set[str]) -> int:
+        """
+        Return the duration of the given network
+        """
+        duration_so_far = 0
+
+        for course in self.courses:
+            if isinstance(course, set):
+                for c in course:
+                    if c.data.code not in visited:
+                        duration_so_far += c.data.duration
+                        visited = visited.union({c.data.code})
+            else:
+                if course.data.code not in visited:
+                    duration_so_far += course.data.duration
+                    visited = visited.union({course.data.code})
+        return duration_so_far
+
+
     def _str_recur_helper(self, tree: Tree, helper_dict: list, root: str) -> Tree:
-        """TODO"""
+        """
+        recursive helper function for __str__
+        """
 
         s = [prereq[1] for prereq in helper_dict if prereq[0] == root]
 
@@ -240,3 +325,26 @@ class PlannerCourseNetwork:
             self._str_recur_helper(tree, helper_dict, prereq)
 
         return tree
+
+# def merge_planner_networks(course_networks: dict[str, PlannerCourseNetwork], database: DatabaseCourseNetwork) -> list[PlannerCourseNetwork]:
+#     """
+#     Merge 2 planner networks
+#     Used for fufilling 2 course prerequsities at the same time
+#
+#     Preconditions:
+#     - Every key in course_networks is a valid course code
+#     - Every value in course_networks is a valid PlannerCourseNetwork for the given course
+#     """
+#     import itertools
+#     all_network_combos = itertools.product(course_networks.values())
+#
+#     min_so_far = all_network_combos[0]
+#     for i in all_network_combos:
+#
+#
+#     # Select the network combination with the lowest score
+#
+#     return lowest_score_combo
+
+# def get_multi_network_score(networks: list[PlannerCourseNetwork]) -> int:
+#     for cour
