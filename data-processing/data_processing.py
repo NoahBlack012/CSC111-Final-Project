@@ -1,12 +1,26 @@
 """
-TOOD: Add file docstring
+CSC111 Final Project: Simplifying the UofT Course Selection Process
+
+Description
+===============================
+A file to cleaned data scraped from the UofT course search website
+Note that this file is never run during the running of the main file of the program, it was already run to build the
+dataset that the program runs.
+
+Copyright and Usage Information
+===============================
+This file is Copyright (c) 2023 Noah Black, Nikita Goncharov and Adam Pralat.
 """
+
 import json
 
 def clean_data(input_file: str, output_file: str) -> None:
     """
     Clean the course data stored in the input file (A json file) and output the cleaned data in the output file (Another
     json file)
+
+    Preconditions:
+    - input_file is a valid path to a json file in
     """
     with open(input_file, 'r') as f:
         file = json.load(f)
@@ -72,3 +86,5 @@ def clean_course_requirements(requirements: str) -> str:
         requirements = requirements[start:end]
 
     return requirements
+
+if __name__ == '__main__':

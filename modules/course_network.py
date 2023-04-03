@@ -267,23 +267,25 @@ class PlannerCourseNetwork:
         ret = str(tree)
         return ret
 
-    def get_duration(self, visited: set[str]) -> int:
-        """
-        Return the duration of the given network
-        """
-        duration_so_far = 0
-
-        for course in self.courses:
-            if isinstance(course, set):
-                for c in course:
-                    if c.data.code not in visited:
-                        duration_so_far += c.data.duration
-                        visited = visited.union({c.data.code})
-            else:
-                if course.data.code not in visited:
-                    duration_so_far += course.data.duration
-                    visited = visited.union({course.data.code})
-        return duration_so_far
+    # def get_number_of_credits(self, visited: set[str]) -> int:
+    #     """
+    #     Return the number of credits required to complete the given network
+    #     """
+    #     # Note Y courses are counted as 2 credits and H courses are counted as 1 credit so the credits for a network
+    #     # can be stored as an int
+    #     credits_so_far = 0
+    #
+    #     for course in self.courses:
+    #         if isinstance(course, set):
+    #             for c in course:
+    #                 if c.data.code not in visited:
+    #                     credits_so_far += c.data.duration
+    #                     visited = visited.union({c.data.code})
+    #         else:
+    #             if course.data.code not in visited:
+    #                 credits_so_far += course.data.duration
+    #                 visited = visited.union({course.data.code})
+    #     return credits_so_far
 
 
     def _str_recur_helper(self, tree: Tree, helper_dict: list, root: str) -> Tree:
