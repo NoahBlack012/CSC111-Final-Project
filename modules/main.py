@@ -130,7 +130,7 @@ def run_program():
     frame3 = LabelFrame(root, text="Course Overview:", padx=15, pady=15, width=60)
     frame3.grid(row=1, column=2)
     starting_label = Label(frame3, text="Submit a course you want to complete for a recommended\
-     \n course path (based on courses that you have completed) \nas well as a brief course description!")
+     \n course path (based on courses that you have completed) \nas well as a brief course overview!")
     starting_label.grid(row=0, column=0)
 
     """ Frame 4: Recommened Path """
